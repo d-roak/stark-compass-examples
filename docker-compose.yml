@@ -28,7 +28,6 @@ services:
       - "4000:4000"
     environment:
       - PHX_HOST=localhost
-      - PORT=4000
       # katana
       - RPC_API_HOST=http://host.docker.internal:5050
       # madara
