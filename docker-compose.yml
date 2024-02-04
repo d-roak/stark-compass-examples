@@ -1,0 +1,60 @@
+version: "3.2"
+
+services:
+  katana:
+    image: ghcr.io/dojoengine/dojo:v0.5.0
+    ports:
+      - "5050:5050"
+    command:
+      - katana
+      - --block-time
+      - "6000"
+      - --disable-fee
+
+  # FIXME: not working
+  madara:
+    image: ghcr.io/keep-starknet-strange/madara:v0.5.2
+    ports:
+      - "9615:9615"
+      - "9944:9944"
+      - "30333:30333"
+    entrypoint: [/bin/bash, -c]
+    command: >
+      "/madara-bin setup --from-remote --chain=dev && /madara-bin --dev --rpc-cors=all"
+
+  stark-compass:
+    image: ghcr.io/lambdaclass/stark_compass_explorer:v0.2.34.3-1
+    ports:
+      - "4000:4000"
+    environment:
+      - PHX_HOST=localhost
+      - PORT=4000
+      # katana
+      - RPC_API_HOST=http://host.docker.internal:5050
+      # madara
+      # - RPC_API_HOST=http://host.docker.internal:9944
+      - TESTNET_RPC_API_HOST=http://localhost
+      - DISABLE_TESTNET_SYNC=true
+      # postgres
+      # - DB_TYPE=postgres
+      # - DATABASE_PATH=ecto://postgres:postgres@stark-compass-postgres:5432/starknet_explorer_dev
+      # sqlite
+      - DB_TYPE=sqlite
+      - DATABASE_PATH=/tmp/explorer.db
+      - SECRET_KEY_BASE=JyULoT5cLBifW+XNEuCTVoAb+SaFgQt9j227RN0cKpR3wTsrApGd1HNcgeopemyl
+      - ENABLE_LISTENER=true
+    depends_on:
+      stark-compass-postgres:
+        condition: service_started
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
+
+  stark-compass-postgres:
+    image: postgres:15.3
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=starknet_explorer_dev
+      - PGDATA=/var/lib/postgresql/data/pgdata
