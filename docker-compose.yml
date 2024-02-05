@@ -7,9 +7,6 @@ services:
       - "5050:5050"
     command:
       - katana
-      - --block-time
-      - "6000"
-      - --disable-fee
 
   # FIXME: not working
   madara:
